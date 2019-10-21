@@ -10,7 +10,7 @@ class FirefoxTest(unittest.TestCase):
 
     def test_page(self):        #test method names must start with 'test'
         self.browser.get('http://localhost:8000')
-        self.assertIn('Django', self.browser.title)
+        self.assertIn('Database', self.browser.title)
         # self.fail('Finish the test!')
 
 if __name__ == '__main__':
