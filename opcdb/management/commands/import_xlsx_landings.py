@@ -39,6 +39,11 @@ class Command(BaseCommand):
         self.stdout.write('Writing initial csv file...')
         self.stdout.write('%s' % datetime.now().strftime('%H:%M.%S'))
         new_csv_file_name = '%s.csv' % extensionless_name
+
+        if os.path.exists(new_csv_file_name):
+            self.stdout.write("File exists! Deleting %s" % new_csv_file_name)
+            os.remove(new_csv_file_name)
+
         new_csv_file = open(new_csv_file_name, 'w')
         wr = csv.writer(new_csv_file, quoting=csv.QUOTE_ALL)
 
@@ -58,6 +63,7 @@ class Command(BaseCommand):
                 csv_f = csv.reader(f)
                 new_rows = []
                 target_col_id = None
+                headers = []
                 int_fields = [
                     "VesselID",
                     'PortID',
@@ -72,8 +78,14 @@ class Command(BaseCommand):
                     'FishConditionID',
                     'UseID'
                 ]
+                abv_fields = [
+                    'FisherAbv',
+                    'VesselAbv',
+                    'BusinessAbv'
+                ]
                 for row_num, row in enumerate(csv_f):
                     if row_num == 0:
+                        headers = row[0:]
                         try:
                             target_col_id = row.index(DATE_COLUMN)
                         except ValueError as e:
@@ -85,7 +97,14 @@ class Command(BaseCommand):
                             try:
                                 int_field_cols.append(row.index(field))
                             except Exception as e:
-                                print('--- WARNING: Column %s not found. ---' % field)
+                                self.stdout.write('--- WARNING: Column %s not found. ---' % field)
+                                pass
+                        abv_field_cols = []
+                        for field in abv_fields:
+                            try:
+                                abv_field_cols.append(row.index(field))
+                            except Exception as e:
+                                self.stdout.write('--- WARNING: Column %s not found. ---' % field)
                                 pass
 
                     else:
@@ -97,6 +116,15 @@ class Command(BaseCommand):
                                 try:
                                     row[row_index] = int(float(row[row_index]))
                                 except Exception as e:
+                                    pass
+                            if row_index in abv_field_cols:
+                                try:
+                                    if len(row[row_index]) > 4:
+                                        # self.stdout.write('--- WARNING: Truncating abv field %s (%d) on row %d ---' % (headers[row_index], row_index, row_num))
+                                        # self.stdout.write('---     ---: %s ----> %s ---' % (row[row_index], row[row_index][0:3]))
+                                        row[row_index] = row[row_index][0:3]
+                                except Exception as e:
+                                    self.stdout.write('--- WARNING: Failed to clean abv field %s on row %d ---' % (field, row_index))
                                     pass
                             if row[row_index] == '*':
                                 row[row_index] = ''

@@ -1,6 +1,5 @@
 from django.db import models
 
-# Create your models here.
 class LandingRecord(models.Model):
     landingReceiptNum = models.CharField(max_length=50, db_column='LandingReceiptNum')
     landingDate = models.DateField(db_column="LandingDate")
@@ -83,3 +82,58 @@ class LandingRecord(models.Model):
             useID = row['UseID'],
             useName = row['UseName'],
         )
+
+class PortGroupLookup(models.Model):
+    projectShortCode = models.CharField(max_length=255, db_column="Project short code")
+    portName = models.CharField(max_length=100, db_column="Port name")
+    lat = models.FloatField(db_column="Lat")
+    lon = models.FloatField(db_column="Long")
+    portGroup = models.CharField(max_length=100, db_column="Port group")
+    californiaRegion= models.CharField(max_length=100, db_column="California Region")
+    portCode = models.IntegerField(db_column="Port code")
+
+class SpeciesGroupLookup(models.Model):
+    projectShortCode = models.CharField(max_length=255, db_column="Project short code")
+    speciesCode = models.IntegerField(db_column="Species Code")
+    speciesName= models.CharField(max_length=255, db_column="Species Name")
+    commercialSpeciesGroup = models.CharField(max_length=255, db_column="Commercial Species Group")
+    gearCode = models.IntegerField(db_column="Gear Code")
+    gearDescription = models.CharField(max_length=255, db_column="Gear Description")
+    gearGroup = models.CharField(max_length=255, db_column="Gear Group")
+    commeciarlDataViewer = models.CharField(max_length=4, db_column="Commercial Data Viewer")
+    cPFVSpeciesGroup = models.CharField(max_length=255, db_column="CPFV Species Group")
+    cPFVDataViews = models.CharField(max_length=4, db_column="CPFV Data Viewer")
+
+
+
+
+
+
+# SELECT
+#     [1992].Landing_Year,
+#     TblPrtGrpLkup_update1.Mlpa_stdy_reg,
+#     TblPrtGrpLkup_update1.Port_group,
+#     TblSpsGrps_update1.COMM_Sps,
+#     TblGearLkup_update1.Gear_grp,
+#     [1992].Condition_Group,
+#     Sum([1992].Pounds) AS SumOfPounds,
+#     Sum([1992].Value_Inflation) AS SumOfValue_Inflation,
+#     Avg([1992].Price_Inflation) AS AvgOfPrice_Inflation,
+#     TblSpsGrps_update1.Comm_NC
+# FROM
+#     (
+#         (1992 INNER JOIN TblSpsGrps_update1 ON [1992].Species_Code = TblSpsGrps_update1.SPECIES_CODE)
+#         INNER JOIN TblGearLkup_update1 ON [1992].Gear_Code = TblGearLkup_update1.[Gear Code]
+#     ) INNER JOIN TblPrtGrpLkup_update1 ON [1992].Port_Code = TblPrtGrpLkup_update1.Portcode
+# GROUP BY
+#     [1992].Landing_Year,
+#     TblPrtGrpLkup_update1.Mlpa_stdy_reg,
+#     TblPrtGrpLkup_update1.Port_group,
+#     TblSpsGrps_update1.COMM_Sps,
+#     TblGearLkup_update1.Gear_grp,
+#     [1992].Condition_Group,
+#     TblSpsGrps_update1.Comm_NC
+# HAVING
+#     (
+#         ((TblPrtGrpLkup_update1.Mlpa_stdy_reg)="NCSR")
+#     );
