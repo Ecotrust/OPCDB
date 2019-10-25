@@ -125,4 +125,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
+
 # IMPORT_EXPORT_USE_TRANSACTIONS = True
+
+from opc.local_settings import *

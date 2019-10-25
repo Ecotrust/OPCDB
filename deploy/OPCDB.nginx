@@ -1,0 +1,21 @@
+server {
+        listen 80;
+        listen [::]:80;
+
+        server_name 44.225.5.66 ocpdb.ecotrust.org;
+        access_log /var/log/nginx/opcdb.access.log;
+        error_log /var/log/nginx/opcdb.error.log;
+
+        location /munin/static/ {
+                alias /etc/munin/static/;
+        }
+
+        location /munin {
+                alias /var/cache/munin/www;
+        }
+
+        location / {
+                uwsgi_pass unix:///tmp/opcdb-socket;
+                include /etc/nginx/uwsgi_params;
+        }
+}
