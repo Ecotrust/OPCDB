@@ -83,6 +83,9 @@ class LandingRecord(models.Model):
             useName = row['UseName'],
         )
 
+    def __str__(self):
+        return("%s: %s - %s" % (self.landingReceiptNum, self.speciesName, self.landingDate))
+
 class PortGroupLookup(models.Model):
     projectShortCode = models.CharField(max_length=255, db_column="Project short code")
     portName = models.CharField(max_length=100, db_column="Port name")
@@ -91,6 +94,9 @@ class PortGroupLookup(models.Model):
     portGroup = models.CharField(max_length=100, db_column="Port group")
     californiaRegion= models.CharField(max_length=100, db_column="California Region")
     portCode = models.IntegerField(db_column="Port code")
+
+    def __str__(self):
+        return self.portName
 
 class SpeciesGroupLookup(models.Model):
     projectShortCode = models.CharField(max_length=255, db_column="Project short code")
@@ -103,6 +109,9 @@ class SpeciesGroupLookup(models.Model):
     commeciarlDataViewer = models.CharField(max_length=4, db_column="Commercial Data Viewer")
     cPFVSpeciesGroup = models.CharField(max_length=255, db_column="CPFV Species Group")
     cPFVDataViews = models.CharField(max_length=4, db_column="CPFV Data Viewer")
+
+    def __str__(self):
+        return "%s - %s" % (self.speciesName, self.gearDescription)
 
 
 
