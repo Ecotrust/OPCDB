@@ -11,7 +11,7 @@ class LandingRecord(models.Model):
     vesselAbv = models.CharField(max_length=4, null=True, blank=True, default=None, db_column='VesselAbv')
     statePermitNumber = models.CharField(max_length=20, null=True, blank=True, default=None, db_column='StatePermitNumber')
     gFPermitNum = models.CharField(max_length=50, null=True, blank=True, default=None, db_column='GFPermitNum')
-    portID = models.IntegerField(db_column='PortID')
+    portID = models.IntegerField(null=True, blank=True, default=None, db_column='PortID')
     portName = models.CharField(max_length=255, null=True, blank=True, default=None, db_column='PortName')
     cDFWBlockID = models.IntegerField(null=True, blank=True, default=None, db_column='CDFWBlockID')
     blockName = models.CharField(max_length=255, null=True, blank=True, default=None, db_column='BlockName')
