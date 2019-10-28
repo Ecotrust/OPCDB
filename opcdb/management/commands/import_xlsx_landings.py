@@ -32,25 +32,49 @@ class Command(BaseCommand):
 
         self.stdout.write('Reading xlsx file...')
         self.stdout.write('%s' % datetime.now().strftime('%H:%M.%S'))
-        wb = xlrd.open_workbook(in_file_name)
-        extensionless_name = in_file_name.split('.xls')[0]
-        sh = wb.sheet_by_index(0)
+        if ('.xls' in in_file_name.lower()):
+            is_excel = True
+            wb = xlrd.open_workbook(in_file_name)
+            extensionless_name = in_file_name.split('.xls')[0]
+            sh = wb.sheet_by_index(0)
 
-        self.stdout.write('Writing initial csv file...')
-        self.stdout.write('%s' % datetime.now().strftime('%H:%M.%S'))
-        new_csv_file_name = '%s.csv' % extensionless_name
+            self.stdout.write('Writing initial csv file...')
+            self.stdout.write('%s' % datetime.now().strftime('%H:%M.%S'))
+            new_csv_file_name = '%s.csv' % extensionless_name
 
-        if os.path.exists(new_csv_file_name):
-            self.stdout.write("File exists! Deleting %s" % new_csv_file_name)
-            os.remove(new_csv_file_name)
+            if os.path.exists(new_csv_file_name):
+                self.stdout.write("File exists! Deleting %s" % new_csv_file_name)
+                os.remove(new_csv_file_name)
 
-        new_csv_file = open(new_csv_file_name, 'w')
-        wr = csv.writer(new_csv_file, quoting=csv.QUOTE_ALL)
+            new_csv_file = open(new_csv_file_name, 'w')
+            wr = csv.writer(new_csv_file, quoting=csv.QUOTE_ALL)
 
-        for rownum in range(sh.nrows):
-            wr.writerow(sh.row_values(rownum))
+            for rownum in range(sh.nrows):
+                wr.writerow(sh.row_values(rownum))
 
-        new_csv_file.close()
+            new_csv_file.close()
+
+        elif ('.csv' in in_file_name.lower()):
+            is_excel = False
+            self.stdout.write('Reading CSV file...')
+            if ' LR.csv' in in_file_name:
+                new_csv_file_name = '%s Landing Data.csv' % in_file_name.split(' ')[0]
+                if os.path.exists(new_csv_file_name):
+                    self.stdout.write("File exists! Deleting %s" % new_csv_file_name)
+                    os.remove(new_csv_file_name)
+
+                from shutil import copyfile
+                copyfile(in_file_name, new_csv_file_name)
+            else:
+                new_csv_file_name = in_file_name
+
+
+        else:
+            self.stdout.write('--- ERROR: You must provide either a .xlsx or .csv file ---' % in_file_name)
+            self.stdout.write('%s' % datetime.now().strftime('%H:%M.%S'))
+            sys.exit()
+
+
 
         ###################
         # CLEAN CSV file
@@ -108,9 +132,19 @@ class Command(BaseCommand):
                                 pass
 
                     else:
-                        excel_date = int(float(row[target_col_id]))
-                        dt = datetime.fromordinal(datetime(1900, 1, 1).toordinal() + excel_date -2)
-                        row[target_col_id] = dt.strftime('%Y-%m-%d')
+                        if (is_excel):
+                            excel_date = int(float(row[target_col_id]))
+                            dt = datetime.fromordinal(datetime(1900, 1, 1).toordinal() + excel_date -2)
+                            row[target_col_id] = dt.strftime('%Y-%m-%d')
+                        else:
+                            try:
+                                if '/' in row[target_col_id]:
+                                    slash_date = row[target_col_id].split('/')
+                                    if len(slash_date) == 3:
+                                        row[target_col_id] = "%s-%s-%s" % (slash_date[2], slash_date[0], slash_date[1])
+                            except Exception as e:
+                                import ipdb; ipdb.set_trace()
+                                self.stdout.write(e)
                         for row_index, cell in enumerate(row):
                             if row_index in int_field_cols:
                                 try:
@@ -158,14 +192,9 @@ class Command(BaseCommand):
         self.stdout.write('%s' % datetime.now().strftime('%H:%M.%S'))
 
         run_cmd = 'psql -U postgres -c "COPY opcdb_landingrecord('
-        run_cmd += '\\"LandingReceiptNum\\",\\"LandingDate\\",\\"FisherID\\",\\"FisherName\\",'
-        run_cmd += '\\"FisherAbv\\",\\"VesselID\\",\\"FGVesselName\\",\\"VesselAbv\\",'
-        run_cmd += '\\"StatePermitNumber\\",\\"GFPermitNum\\",\\"PortID\\",\\"PortName\\",'
-        run_cmd += '\\"CDFWBlockID\\",\\"BlockName\\",\\"BusinessID\\",\\"FishBusinessName\\",'
-        run_cmd += '\\"BusinessAbv\\",\\"PlantID\\",\\"PrimaryGearID\\",\\"PrimaryGearName\\",'
-        run_cmd += '\\"SpeciesID\\",\\"SpeciesName\\",\\"Quantity\\",\\"Pounds\\",\\"UnitPrice\\",'
-        run_cmd += '\\"TotalPrice\\",\\"GearID\\",\\"GearName\\",\\"DepthName\\",\\"GradeName\\",'
-        run_cmd += '\\"FishConditionID\\",\\"FishConditionName\\",\\"UseID\\",\\"UseName\\")'
+        run_cmd += '\\"'
+        run_cmd += '\\",\\"'.join(headers)
+        run_cmd += '\\")'
         run_cmd += ' FROM \'%s\' delimiter \',\' csv HEADER;" opcdb' % new_csv_file_name
 
         os.system(run_cmd)
