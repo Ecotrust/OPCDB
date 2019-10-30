@@ -113,36 +113,13 @@ class SpeciesGroupLookup(models.Model):
     def __str__(self):
         return "%s - %s" % (self.speciesName, self.gearDescription)
 
+class InflationIndex(models.Model):
+    year = models.IntegerField(primary_key=True)
+    cpi = models.FloatField()
+    # Having the below value pre-calculated is super handy, but goes against DB design standards
+    inflFactor = models.FloatField(null=True, blank=True, default=None)
+    # Adding this field makes the previous field more forgivable
+    yearCalculated = models.IntegerField(default=2018)
 
-
-
-
-
-# SELECT
-#     [1992].Landing_Year,
-#     TblPrtGrpLkup_update1.Mlpa_stdy_reg,
-#     TblPrtGrpLkup_update1.Port_group,
-#     TblSpsGrps_update1.COMM_Sps,
-#     TblGearLkup_update1.Gear_grp,
-#     [1992].Condition_Group,
-#     Sum([1992].Pounds) AS SumOfPounds,
-#     Sum([1992].Value_Inflation) AS SumOfValue_Inflation,
-#     Avg([1992].Price_Inflation) AS AvgOfPrice_Inflation,
-#     TblSpsGrps_update1.Comm_NC
-# FROM
-#     (
-#         (1992 INNER JOIN TblSpsGrps_update1 ON [1992].Species_Code = TblSpsGrps_update1.SPECIES_CODE)
-#         INNER JOIN TblGearLkup_update1 ON [1992].Gear_Code = TblGearLkup_update1.[Gear Code]
-#     ) INNER JOIN TblPrtGrpLkup_update1 ON [1992].Port_Code = TblPrtGrpLkup_update1.Portcode
-# GROUP BY
-#     [1992].Landing_Year,
-#     TblPrtGrpLkup_update1.Mlpa_stdy_reg,
-#     TblPrtGrpLkup_update1.Port_group,
-#     TblSpsGrps_update1.COMM_Sps,
-#     TblGearLkup_update1.Gear_grp,
-#     [1992].Condition_Group,
-#     TblSpsGrps_update1.Comm_NC
-# HAVING
-#     (
-#         ((TblPrtGrpLkup_update1.Mlpa_stdy_reg)="NCSR")
-#     );
+    def __str__(self):
+        return "%s: %s" % (self.year, self.cpi)
